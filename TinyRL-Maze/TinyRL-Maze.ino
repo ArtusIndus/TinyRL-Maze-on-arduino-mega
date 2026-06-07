@@ -1,4 +1,6 @@
 /*
+  
+Copyright (c) 2026 ArtusIndus
   TinyRL-Maze (Arduino Mega)
   Fixed Version
 
