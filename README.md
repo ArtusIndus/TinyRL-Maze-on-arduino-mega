@@ -74,12 +74,12 @@ After training, the agent converges to a stable optimal policy:
 - Deterministic greedy route after convergence  
 
 Example output:
-
-Episode: 1500
-Success Rate: 98.60%
-Avg Steps: 36.10
-Greedy Path: 24 
-
+```cpp
+Episode: 1500 
+Success Rate: 98.60% 
+Avg Steps: 36.10 
+Greedy Path: 24
+```
 ---
 
 ## Why This Project Matters
