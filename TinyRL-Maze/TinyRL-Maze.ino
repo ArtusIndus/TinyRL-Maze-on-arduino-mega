@@ -21,6 +21,10 @@ const byte H = 15;
 const long MAX_EPISODES = 50000;
 const int MAX_STEPS = 400;
 
+// Static maze layout
+// '#' = wall
+// 'S' = default start marker in map design
+// 'G' = default goal marker in map design
 const char maze[H][W + 1] = {
   "###############",
   "#S..#.....#...#",
@@ -41,12 +45,14 @@ const char maze[H][W + 1] = {
 
 const byte ACTIONS = 4;
 
-// Use float for proper learning
+// Q-table:
+// Q[x][y][action]
 float Q[W][H][ACTIONS];
 
-float alpha = 0.15f;
-float gamma = 0.95f;
-float epsilon = 0.20f;
+// Q-Learning parameters
+float alpha = 0.15f;   // learning rate
+float gamma = 0.95f;   // discount factor
+float epsilon = 0.20f; // exploration rate
 
 bool ready = false;
 
@@ -59,12 +65,14 @@ int startY = -1;
 int goalX = -1;
 int goalY = -1;
 
-// Statistics
+// Training statistics
 long episode = 0;
 long successCount = 0;
 long totalSteps = 0;
 
 // --------------------------------------------------
+// Returns true if position is outside the maze
+// or contains a wall tile.
 bool isWall(int x, int y)
 {
   if (x < 0 || x >= W) return true;
@@ -74,6 +82,8 @@ bool isWall(int x, int y)
 }
 
 // --------------------------------------------------
+// Checks whether the environment is fully configured
+// and ready for training.
 void checkReady()
 {
   ready = false;
@@ -102,7 +112,9 @@ void checkReady()
   Serial.println("Training started.");
   Serial.println("================================");
 }
+
 // --------------------------------------------------
+// Clears all learned Q-values and statistics.
 void resetLearning()
 {
   memset(Q, 0, sizeof(Q));
@@ -115,6 +127,9 @@ void resetLearning()
 }
 
 // --------------------------------------------------
+// Epsilon-greedy action selection.
+// With probability epsilon choose random action,
+// otherwise choose best known action.
 int chooseAction(int x, int y)
 {
   if (random(1000) < (long)(epsilon * 1000))
@@ -132,6 +147,7 @@ int chooseAction(int x, int y)
     }
     else if (Q[x][y][a] == bestQ && random(2))
     {
+      // Random tie-breaking
       bestA = a;
     }
   }
@@ -140,6 +156,8 @@ int chooseAction(int x, int y)
 }
 
 // --------------------------------------------------
+// Returns the highest future Q-value
+// for a given state.
 float bestFuture(int x, int y)
 {
   float best = Q[x][y][0];
@@ -154,6 +172,7 @@ float bestFuture(int x, int y)
 }
 
 // --------------------------------------------------
+// Calculates next position for an action.
 void moveAgent(int x, int y, int a, int &nx, int &ny)
 {
   nx = x;
@@ -169,6 +188,8 @@ void moveAgent(int x, int y, int a, int &nx, int &ny)
 }
 
 // --------------------------------------------------
+// Executes one complete training episode.
+// Returns true if the goal was reached.
 bool runEpisode(int &stepsUsed)
 {
   int x = startX;
@@ -183,21 +204,25 @@ bool runEpisode(int &stepsUsed)
 
     int reward;
 
+    // Wall collision
     if (isWall(nx, ny))
     {
       reward = -30;
       nx = x;
       ny = y;
     }
+    // Goal reached
     else if (nx == goalX && ny == goalY)
     {
       reward = 100;
     }
+    // Normal movement penalty
     else
     {
       reward = -1;
     }
 
+    // Standard Q-Learning update
     Q[x][y][a] =
       Q[x][y][a] +
       alpha *
@@ -222,6 +247,9 @@ bool runEpisode(int &stepsUsed)
 }
 
 // --------------------------------------------------
+// Executes a fully greedy run using the current policy.
+// Returns the number of steps to goal,
+// or 0 if goal was not reached.
 int greedyRun()
 {
   int x = startX;
@@ -261,6 +289,8 @@ int greedyRun()
 }
 
 // --------------------------------------------------
+// Prints the currently learned policy.
+// Arrows indicate the preferred action.
 void printPolicy()
 {
   Serial.println();
@@ -314,6 +344,7 @@ void printPolicy()
 }
 
 // --------------------------------------------------
+// Processes user commands from the serial interface.
 void handleSerial()
 {
   if (!Serial.available())
@@ -404,10 +435,12 @@ void handleSerial()
 }
 
 // --------------------------------------------------
+// Arduino setup routine.
 void setup()
 {
   Serial.begin(115200);
 
+  // Seed random generator from analog noise
   randomSeed(analogRead(A0));
 
   Serial.println();
@@ -431,6 +464,7 @@ void setup()
 }
 
 // --------------------------------------------------
+// Main Arduino loop.
 void loop()
 {
   handleSerial();
@@ -439,6 +473,8 @@ void loop()
 {
   static unsigned long lastMsg = 0;
 
+  // Periodically remind the user that
+  // start and goal positions are missing.
   if (millis() - lastMsg > 5000)
   {
     lastMsg = millis();
@@ -461,6 +497,7 @@ void loop()
 
     printPolicy();
 
+    // Stop execution permanently
     while (true)
     {
     }
@@ -478,6 +515,7 @@ void loop()
     totalSteps += steps;
   }
 
+  // Print progress every 500 episodes
   if (episode % 500 == 0)
   {
     Serial.println("----------------------");
