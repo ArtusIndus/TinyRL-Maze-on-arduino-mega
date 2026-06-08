@@ -18,7 +18,7 @@ Copyright (c) 2026 ArtusIndus
 const byte W = 15;
 const byte H = 15;
 
-const long MAX_EPISODES = 2000;
+const long MAX_EPISODES = 1000;
 const int MAX_STEPS = 400;
 
 // Static maze layout
@@ -478,10 +478,6 @@ void loop()
   if (millis() - lastMsg > 5000)
   {
     lastMsg = millis();
-
-    Serial.println(
-      "Waiting for START and GOAL..."
-    );
   }
 
   return;
@@ -516,7 +512,7 @@ void loop()
   }
 
   // Print progress every 500 episodes
-  if (episode % 100 == 0)
+  if (episode % 50 == 0)
   {
     Serial.println("----------------------");
 
@@ -537,6 +533,7 @@ void loop()
         (float)successCount
       );
     }
+
 
     Serial.print("Greedy Path: ");
     Serial.println(greedyRun());
