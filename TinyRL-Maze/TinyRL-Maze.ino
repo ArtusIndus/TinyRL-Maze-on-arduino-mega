@@ -18,7 +18,7 @@ Copyright (c) 2026 ArtusIndus
 const byte W = 15;
 const byte H = 15;
 
-const long MAX_EPISODES = 50000;
+const long MAX_EPISODES = 2000;
 const int MAX_STEPS = 400;
 
 // Static maze layout
@@ -516,7 +516,7 @@ void loop()
   }
 
   // Print progress every 500 episodes
-  if (episode % 500 == 0)
+  if (episode % 100 == 0)
   {
     Serial.println("----------------------");
 
